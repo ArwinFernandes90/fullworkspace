@@ -1,0 +1,4 @@
+Bundle-Name: Consumer
+Bundle-SymbolicName: com.liferay.state.consumer
+Bundle-Version: 1.0.0
+Export-Package: com.liferay.state.consumer.constants

@@ -1,0 +1,211 @@
+<?xml version="1.0"?>
+<!-- this workflow will sent data from a simple form (subject and description field) to an external rest service -->
+<workflow-definition
+	xmlns="urn:liferay.com:liferay-workflow_7.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:liferay.com:liferay-workflow_7.0.0 http://www.liferay.com/dtd/liferay-workflow-definition_7_0_0.xsd">
+	<name>Logger</name>
+	<description/>
+	<version>1</version>
+	<state>
+		<name>Start</name>
+		<metadata>
+			<![CDATA[{"xy":[100,40],"transitions":{"connector135430":{"bendpoints":[]}}}]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>Log</name>
+				<description/>
+				<script>
+					<![CDATA[
+import com.liferay.portal.kernel.util.GetterUtil;
+	import java.util.List;
+						import java.util.Locale;
+		import java.net.URL;
+import java.net.URLEncoder;			
+			import java.net.HttpURLConnection;
+				import java.io.DataOutputStream;
+			import java.io.IOException;
+
+import java.net.MalformedURLException;		
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.dynamic.data.lists.model.DDLRecord;
+import com.liferay.dynamic.data.lists.service.DDLRecordLocalServiceUtil;
+import com.liferay.dynamic.data.lists.service.DDLRecordVersionLocalServiceUtil
+import com.liferay.dynamic.data.lists.model.DDLRecordVersion;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstance;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecord;
+import com.liferay.dynamic.data.mapping.model.DDMFormInstanceRecordVersion;
+import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.service.DDMContentLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.service.DDMFormInstanceRecordVersionLocalServiceUtil;
+
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.service.JournalArticleLocalServiceUtil;
+
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.Base64;
+
+long classPK = GetterUtil.getLong((String)workflowContext.get(WorkflowConstants.CONTEXT_ENTRY_CLASS_PK));
+System.out.println("original classPK: " + classPK);
+DDMFormInstanceRecordVersion recVer=DDMFormInstanceRecordVersionLocalServiceUtil.getFormInstanceRecordVersion(classPK);
+						
+		Value val;
+		String application="";
+		String applicationName="";
+		String organization="";
+		String organizationName="";
+		int count=0;
+		System.out.println(recVer.getCompanyId()+"User ID::::"+recVer.getUserId()+"recVer.getGroupId();"+recVer.getGroupId());
+	    //you  can get all details of user and company using recVer
+	
+		List<DDMFormFieldValue> formFieldVals = recVer.getDDMFormValues().getDDMFormFieldValues();
+			
+		for (DDMFormFieldValue fmval : formFieldVals) {
+			System.out.println("Count value++"+count);
+			if(count==0) {
+				application=fmval.getValue().getString(Locale.ROOT);
+			}
+			if(count==1) {
+				organization=fmval.getValue().getString(Locale.ROOT);
+			}
+			count++;
+		    }
+		    System.out.println(" application: "+application+"   => organization ==>"+organization);
+		
+	
+		
+						long companyIdDD = GetterUtil.getLong((String) workflowContext.get(WorkflowConstants.CONTEXT_COMPANY_ID));
+						System.out.println("companyIdDD: " + companyIdDD);
+						ServiceContext serviceContext = (ServiceContext) workflowContext.get(WorkflowConstants.CONTEXT_SERVICE_CONTEXT);
+        				
+					
+					
+						Locale locale = new Locale("en", "US");
+					
+							String urlParameters = "";
+		String urlObj="http://localhost:8080/o/org/genericFuntionality/";
+		urlParameters += "application=" + URLEncoder.encode("TEST","utf-8");
+		urlParameters += "&orgType=" + URLEncoder.encode("parent","utf-8");
+		urlParameters += "&orgName=" + URLEncoder.encode("testing","utf-8");
+		urlParameters += "&vendorCode=" + URLEncoder.encode("DummyVendor","utf-8");
+		urlParameters += "&country=" + URLEncoder.encode("Germany","utf-8");
+		urlParameters += "&region=" + URLEncoder.encode("12323","utf-8");
+		urlParameters += "&parentOrg=" + URLEncoder.encode("ALA","utf-8");	
+		urlParameters += "&comments=" + URLEncoder.encode("commenting","utf-8");
+		urlParameters += "&tags=" + URLEncoder.encode("test","utf-8");
+		System.out.println("urlParameters::::"+urlParameters);	
+			JSONObject jObj=JSONFactoryUtil.createJSONObject();
+		jObj.put("application", "TestApp");
+		jObj.put("orgType","parent");
+		System.out.println("Before connection");
+	//	HttpURLConnection con = (HttpURLConnection) new URL(urlObj+"?"+urlParameters).openConnection();
+	    HttpURLConnection con = (HttpURLConnection) new URL(urlObj).openConnection();
+		String uname ="test@liferay.com";
+		String pswd="test";
+		String authStr=uname+":"+pswd;
+		System.out.println("auth"+authStr);
+		String authStrEnc=Base64.encode(authStr.getBytes());
+		System.out.println("After connection"+con);
+		//add request header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", "LiferayDXP");
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		con.setRequestProperty("Content-Type", "application/json");
+		con.setRequestProperty("Authorization", "Basic "+authStrEnc);
+		// Send post request
+		con.setDoOutput(true);
+		System.out.println("con.getOutputStream()"+con.getOutputStream());
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+	//	wr.writeBytes(urlParameters);
+	    wr.writeBytes(jObj.toString());
+		wr.flush();
+		wr.close();
+		int responseCode = con.getResponseCode();
+		System.out.println("Responsecode: " + responseCode+":::Message"+con.getResponseMessage());
+		if(responseCode==200) {
+			
+			BufferedReader in=new BufferedReader(new InputStreamReader(con.getInputSTream()));
+			String inputLine="";
+			StringBuffer response=new StringBuffer();
+			while((inputLine=in.readLine())!=null) {
+				response.append(inputLine);
+			}
+			
+			in.close();
+			//print result
+			System.out.println("Response is::::"+response.toString() );
+		}else {
+			System.out.println("Post did not work");
+		}
+					]]>
+				</script>
+				<script-language>groovy</script-language>
+				<execution-type>onEntry</execution-type>
+			</action>
+			<notification>
+				<name>Notifier</name>
+				<description/>
+				<template>
+					<![CDATA[Hi, you just received a message from the workflow]]>
+				</template>
+				<template-language>text</template-language>
+				<notification-type>user-notification</notification-type>
+				<recipients receptionType="to">
+					<user/>
+				</recipients>
+				<execution-type>onEntry</execution-type>
+			</notification>
+		</actions>
+		<initial>true</initial>
+		<transitions>
+            <transition>
+                <name>connector135430</name>
+                <target>TASK</target>
+                <default>true</default>
+            </transition>
+		</transitions>
+	</state>
+	<state>
+		<name>End</name>
+		<metadata>
+			<![CDATA[{"xy":[1380,40],"terminal":true}]]>
+		</metadata>
+		<actions>
+			<action>
+				<name>Approve</name>
+				<description>Approve</description>
+				<script>
+					<![CDATA[com.liferay.portal.kernel.workflow.WorkflowStatusManagerUtil.updateStatus(com.liferay.portal.kernel.workflow.WorkflowConstants.getLabelStatus("approved"), workflowContext);]]>
+				</script>
+				<script-language>groovy</script-language>
+				<execution-type>onEntry</execution-type>
+			</action>
+		</actions>
+	</state>
+	<task>
+		<name>TASK</name>
+		<metadata>
+			<![CDATA[{"xy":[780,25],"transitions":{"connector1213":{"xy":[-9,27],"bendpoints":[]}}}]]>
+		</metadata>
+		<assignments>
+			<scripted-assignment>
+				<script>
+					<![CDATA[/*specify script assignment */]]>
+				</script>
+				<script-language>groovy</script-language>
+			</scripted-assignment>
+		</assignments>
+		<transitions>
+			<transition>
+				<name>connector1213</name>
+				<target>End</target>
+			</transition>
+		</transitions>
+	</task>
+</workflow-definition>

@@ -1,0 +1,4 @@
+Bundle-Name: Producer
+Bundle-SymbolicName: com.liferay.country.producer
+Bundle-Version: 1.0.0
+Export-Package: com.liferay.country.producer.constants

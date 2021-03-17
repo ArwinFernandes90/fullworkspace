@@ -1,0 +1,4 @@
+Bundle-Name: Demo
+Bundle-SymbolicName: Demo
+Bundle-Version: 1.0.0
+Export-Package: Demo.constants

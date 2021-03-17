@@ -1,0 +1,17 @@
+/* These inject tags are used for dynamically creating imports for themelet styles, you can place them where ever you like in this file. */
+
+/* inject:imports */
+
+@import 'liferay-font-awesome/scss/font-awesome';
+@import 'liferay-font-awesome/scss/glyphicons';
+
+/* endinject */
+
+/* This file allows you to override default styl7es in one central location for easier upgrade and maintenance. */
+@media only screen and (min-width: 768px) {
+    #banner .language-bar {
+      position: absolute;
+      right: 160px;
+      top: 0px; 
+    } 
+}

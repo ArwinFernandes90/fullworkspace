@@ -1,0 +1,4 @@
+Bundle-Name: DemoScheduler
+Bundle-SymbolicName: com.example.custom.scheduler
+Bundle-Version: 1.0.0
+Export-Package: com.example.custom.scheduler.constants

@@ -1,0 +1,4 @@
+Bundle-Name: rest-org-creation
+Bundle-SymbolicName: com.org.create.rest.module
+Bundle-Version: 1.0.0
+Liferay-Configuration-Path: /configuration
