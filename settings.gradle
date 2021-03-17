@@ -2,6 +2,7 @@ buildscript {
 	dependencies {
 		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "2.0.3"
 		classpath group: "net.saliman", name: "gradle-properties-plugin", version: "1.4.6"
+		 classpath group: "com.liferay", name: "com.liferay.gradle.plugins.service.builder", version: "2.2.46"
 	}
 
 	repositories {
@@ -9,8 +10,11 @@ buildscript {
 			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
+	
 }
 
 apply plugin: "net.saliman.properties"
 
 apply plugin: "com.liferay.workspace"
+
+apply plugin: "com.liferay.portal.tools.service.builder"
